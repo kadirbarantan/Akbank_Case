@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pusula · Kredi Kartı Simülasyonu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#DC0005; --red-top:#E3373D; --red-pill:#E8474C; --red-d:#B00004; --red-l:#FDECEC;
+    --ink:#1B1B1F; --ink2:#6B6E76; --line:#E6E7EB; --bg:#F3F4F6; --card:#fff;
+    --good:#13824A; --good-l:#E7F6EE; --warn:#B65B00; --warn-l:#FFF3E3; --bad:#C4161C; --bad-l:#FDEBEC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Nunito',-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#1f2127;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:40px;min-height:100vh}
+  .phone{width:390px;height:844px;background:var(--bg);border-radius:46px;overflow:hidden;position:relative;box-shadow:0 0 0 12px #0d0d0f,0 30px 90px rgba(0,0,0,.55)}
+  .side{color:#d7d9de;width:240px;font-size:14px;line-height:1.5}
+  .side h3{color:#fff;font-size:18px;margin-bottom:8px}
+  .side button{margin-top:14px;width:100%;padding:12px;border-radius:999px;border:0;background:var(--red);color:#fff;font:800 15px 'Nunito',sans-serif;cursor:pointer}
+  .side button.sec{background:transparent;border:1.5px solid #555a64;color:#d7d9de}
+  .side small{display:block;margin-top:14px;color:#8d919b;font-size:12px}
+  @media (max-width:700px){.side{display:none}}
+  @media (max-width:500px){body{background:var(--bg);display:block}.phone{width:100%;height:100vh;height:100dvh;border-radius:0;box-shadow:none}}
+
+  /* ekran geçişleri */
+  .view{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);will-change:transform}
+  .in-r{animation:inR .45s cubic-bezier(.2,.8,.2,1) both}
+  .out-l{animation:outL .45s cubic-bezier(.2,.8,.2,1) both}
+  .in-l{animation:inL .45s cubic-bezier(.2,.8,.2,1) both}
+  .out-r{animation:outR .45s cubic-bezier(.2,.8,.2,1) both}
+  .in-up{animation:inUp .5s cubic-bezier(.2,.8,.2,1) both}
+  .out-fade{animation:outFade .35s ease both}
+  @keyframes inR{from{transform:translateX(100%)}to{transform:none}}
+  @keyframes outL{from{transform:none}to{transform:translateX(-30%);opacity:.4}}
+  @keyframes inL{from{transform:translateX(-30%);opacity:.4}to{transform:none;opacity:1}}
+  @keyframes outR{from{transform:none}to{transform:translateX(100%)}}
+  @keyframes inUp{from{transform:translateY(100%)}to{transform:none}}
+  @keyframes outFade{to{opacity:0;transform:scale(.97)}}
+  .stag>*{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+  .stag>*:nth-child(2){animation-delay:.06s}.stag>*:nth-child(3){animation-delay:.12s}.stag>*:nth-child(4){animation-delay:.18s}
+  .stag>*:nth-child(5){animation-delay:.24s}.stag>*:nth-child(6){animation-delay:.3s}.stag>*:nth-child(7){animation-delay:.36s}.stag>*:nth-child(n+8){animation-delay:.42s}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .sb{height:44px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-size:14px;font-weight:800}
+  /* ---------- Ana ekran ---------- */
+  .home{overflow-y:auto;flex:1;position:relative}
+  .h-top{background:var(--red-top);color:#fff}
+  .h-greet{display:flex;align-items:center;gap:12px;padding:6px 20px 16px}
+  .asist{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+  .asist i{width:30px;height:30px;border-radius:50%;border:5px solid var(--red);position:relative}
+  .asist i::after{content:"";position:absolute;width:9px;height:9px;background:var(--red);border-radius:50%;left:3px;top:9px}
+  .h-greet .t{flex:1;font-size:15.5px;line-height:1.35}
+  .ini{width:40px;height:40px;border-radius:50%;background:#fff;color:var(--red);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .h-red{background:var(--red);color:#fff;padding:14px 0 70px}
+  .tabs{display:flex;gap:6px;padding:0 16px;overflow:hidden;white-space:nowrap;font-weight:700;font-size:15px}
+  .tabs span{padding:9px 14px;border-radius:999px}
+  .tabs span.on{background:var(--red-pill)}
+  .hero{padding:26px 20px 0;position:relative}
+  .hero .kick{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;letter-spacing:.3px}
+  .hero h2{font-size:27px;line-height:1.25;font-weight:900;margin:12px 0 18px;max-width:300px}
+  .hero .btns{display:flex;gap:10px;align-items:center}
+  .obtn{border:2px solid #fff;color:#fff;background:transparent;border-radius:999px;padding:11px 20px;font:800 15px 'Nunito',sans-serif;cursor:pointer}
+  .obtn.fill{background:#fff;color:var(--red)}
+  .hero .comp{position:absolute;right:14px;top:40px;opacity:.95}
+  .dots{display:flex;gap:6px;padding:18px 20px 0}
+  .dots i{width:7px;height:7px;border-radius:9px;background:rgba(255,255,255,.45)}
+  .dots i.on{width:20px;background:#fff}
+  .search{margin:-28px 20px 0;background:#fff;border-radius:999px;height:56px;display:flex;align-items:center;gap:12px;padding:0 20px;color:#9a9ca3;font-size:16px;box-shadow:0 6px 18px rgba(0,0,0,.08);position:relative}
+  .hcards{display:flex;gap:12px;padding:18px 20px 4px;overflow-x:auto;scrollbar-width:none}
+  .hcards::-webkit-scrollbar{display:none}
+  .hc{flex:none;width:250px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+  .hc .acc{display:flex;gap:10px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .hc .acc b{width:38px;height:38px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900}
+  .hc .lb{color:var(--ink2);font-size:14px;margin-top:12px}
+  .hc .bal{font-size:28px;font-weight:900}
+  .hc .bal small{font-size:20px;color:#9a9ca3}
+  .hc.pus{background:linear-gradient(160deg,#fff 55%,#FDECEC);border:1.5px solid #f6c9cb;position:relative}
+  .hc.pus .new{position:absolute;right:14px;top:14px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px}
+  .hc.pus h4{font-size:16px;line-height:1.35;margin:8px 0 10px;max-width:180px}
+  .rbtn{border:2px solid var(--red);color:var(--red);background:#fff;border-radius:999px;padding:9px 16px;font:800 14px 'Nunito',sans-serif;cursor:pointer}
+  .last{margin:14px 20px 100px;background:#fff;border-radius:18px;padding:16px}
+  .last .r{display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--line)}
+  .last .r:last-child{border:0}
+  .nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;font-size:12px;color:#555;font-weight:600;z-index:3}
+  .nav div{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .nav .on{color:var(--red);font-weight:800}
+  .fab{position:absolute;right:18px;bottom:96px;z-index:4;display:flex;align-items:center;gap:8px;background:var(--red);color:#fff;border-radius:999px;padding:8px 16px 8px 8px;font-weight:800;font-size:14px;box-shadow:0 8px 22px rgba(220,0,5,.4);cursor:pointer;animation:fabin .6s .4s both}
+  .fab .ic{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;position:relative}
+  .fab .ic::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid #fff;animation:ping 1.8s infinite}
+  @keyframes ping{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+  @keyframes fabin{from{opacity:0;transform:translateY(20px) scale(.8)}to{opacity:1;transform:none}}
+
+  /* ---------- Akış ekranları ---------- */
+  .rtop{background:var(--red);color:#fff;flex:none}
+  .rtop .fbar{padding:0 12px}
+  .rtop .sub{text-align:center;font-size:14px;font-weight:700;letter-spacing:.6px;padding:0 0 14px;opacity:.95}
+  .fhead{background:#fff;flex:none;padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+  .fbar{display:flex;align-items:center;justify-content:space-between;height:48px}
+  .fbar .ttl{font-weight:800;font-size:18px}
+  .ibtn{width:36px;height:36px;border-radius:50%;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff}
+  .sec-l{font-size:13px;font-weight:800;color:#5d6068;letter-spacing:.6px;margin:14px 2px 2px}
+  .pref{padding:14px 0;border-bottom:1px solid var(--line)}
+  .pref:last-child{border-bottom:0}
+  .pref .q{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700}
+  .pref .q.dis{color:#b3b5bb}
+  .pref .d{font-size:13.5px;color:var(--ink2);margin-top:4px;line-height:1.45}
+  .info{width:22px;height:22px;border-radius:50%;background:#9EA1A8;color:#fff;font-size:13px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .radios{display:flex;gap:60px;margin-top:12px}
+  .rad{display:flex;align-items:center;gap:12px;font-size:16px;font-weight:700;cursor:pointer}
+  .rad i{width:26px;height:26px;border-radius:50%;border:2px solid #9EA1A8;position:relative}
+  .rad.on i{border-color:#2B2A3A}
+  .rad.on i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:#2B2A3A}
+  .rad.dis{color:#b3b5bb;cursor:not-allowed}.rad.dis i{border-color:#d2d4d8}.rad.dis.on i::after{background:#9EA1A8}
+  .note{display:flex;gap:12px;align-items:flex-start;font-size:13.5px;color:var(--ink2);margin-top:12px;line-height:1.45}
+  .btn.p:disabled{background:#F69A9C;opacity:1}
+  .prog{height:6px;background:#EDEEF1;border-radius:9px;overflow:hidden}
+  .prog i{display:block;height:100%;background:var(--red);border-radius:9px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px;font-weight:800;color:var(--red);letter-spacing:.3px}
+  .skip{color:var(--ink2);font-weight:700;text-decoration:underline;cursor:pointer;background:none;border:0;font:700 12.5px 'Nunito',sans-serif}
+  .fbody{flex:1;overflow-y:auto;padding:16px 18px 18px;display:flex;flex-direction:column}
+  .ffoot{flex:none;padding:12px 18px 26px;background:var(--bg)}
+  h1{font-size:24px;line-height:1.25;font-weight:900;margin:2px 0 8px}
+  h2.s{font-size:20px;line-height:1.3;font-weight:900;margin:2px 0 6px}
+  p{font-size:15px;line-height:1.5;color:var(--ink2)}
+  .muted{color:var(--ink2);font-size:13px}
+  .tiny{font-size:11.5px;color:#8f9299;line-height:1.4}
+  .card{background:#fff;border-radius:18px;padding:16px;margin:10px 0;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .btn{display:block;width:100%;border:0;border-radius:999px;padding:16px;font:800 16px 'Nunito',sans-serif;cursor:pointer;transition:transform .15s,opacity .2s}
+  .btn:active{transform:scale(.98)}
+  .btn.p{background:var(--red);color:#fff}
+  .btn.g{background:#fff;color:var(--red);border:2px solid var(--red);margin-top:10px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .coach{display:flex;gap:10px;align-items:flex-start;margin:6px 0 10px}
+  .pav{flex:none;width:42px;height:42px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center}
+  .bub{background:#fff;border-radius:4px 18px 18px 18px;padding:11px 14px;font-size:14.5px;line-height:1.45;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+  .bub b{color:var(--ink)}
+  label.f{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
+  input.t,select.t{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:14px;font:600 15px 'Nunito',sans-serif;background:#fff;color:var(--ink);outline:none;transition:border-color .2s}
+  input.t:focus,select.t:focus{border-color:var(--red)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;user-select:none;transition:all .2s}
+  .chip.on{border-color:var(--red);background:var(--red-l);color:var(--red)}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:13px;cursor:pointer;user-select:none;transition:all .2s}
+  .tile.on{border-color:var(--red);background:var(--red-l);transform:scale(1.02)}
+  .tile .ic{font-size:22px}.tile .n{font-weight:800;margin-top:4px;font-size:14.5px}.tile .s{font-size:12px;color:var(--ink2)}
+  .bcard{border-radius:20px;padding:18px;color:#fff;background:linear-gradient(135deg,#E3161C,#8E0003);position:relative;height:190px;box-shadow:0 14px 30px rgba(220,0,5,.25);transition:filter .5s, transform .3s}
+  .bcard .chipg{width:40px;height:30px;border-radius:7px;background:linear-gradient(135deg,#f3d27a,#b98d2c)}
+  .bcard .br{position:absolute;right:18px;top:18px;font-weight:900;font-size:13px;letter-spacing:.6px}
+  .bcard .nm{position:absolute;left:18px;bottom:18px;font-size:13px;letter-spacing:1.2px;font-weight:700}
+  .bcard .lim{position:absolute;right:18px;bottom:16px;text-align:right}
+  .bcard .lim small{display:block;font-size:11px;opacity:.8}.bcard .lim b{font-size:20px;font-weight:900}
+  .bcard.frozen{filter:grayscale(1) brightness(.75)}
+  .bcard .lock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;opacity:0;transition:opacity .4s}
+  .bcard.frozen .lock{opacity:1}
+  .tap{animation:tap .6s ease}
+  @keyframes tap{0%{transform:none}40%{transform:translateY(-6px) rotate(-2deg)}100%{transform:none}}
+  .opt{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;transition:all .2s}
+  .opt:hover{border-color:var(--red)}
+  .opt .n{font-weight:800}.opt .s{font-size:13px;color:var(--ink2);margin-top:2px}
+  .opt .ch{color:var(--red);font-weight:900;font-size:20px}
+  .res{border-radius:18px;padding:15px;margin:10px 0;animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+  @keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+  .res.good{background:var(--good-l)}.res.warn{background:var(--warn-l)}.res.bad{background:var(--bad-l)}
+  .res h3{font-size:16.5px;font-weight:900;margin-bottom:4px}
+  .res.good h3{color:var(--good)}.res.warn h3{color:var(--warn)}.res.bad h3{color:var(--bad)}
+  .res p{font-size:14.5px;color:var(--ink)}
+  .trust{display:flex;gap:10px;align-items:flex-start;background:#fff;border-radius:16px;padding:13px;margin:8px 0;border-left:4px solid var(--red)}
+  .trust .ic{font-size:20px}.trust b{display:block;font-size:14.5px}.trust span{font-size:13px;color:var(--ink2)}
+  .kv{display:flex;justify-content:space-between;font-size:14.5px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .kv:last-child{border-bottom:0}.kv b{font-weight:800}
+  .perk{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  .perk:last-child{border-bottom:0}
+  .pct{background:var(--red);color:#fff;font-weight:900;border-radius:10px;padding:6px 9px;font-size:13px}
+  .big{font-size:32px;font-weight:900;color:var(--good)}
+  .ring{width:150px;height:150px;margin:6px auto 0;position:relative}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .v b{font-size:36px;font-weight:900}.ring .v span{font-size:12px;color:var(--ink2);font-weight:700}
+  .toggle{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:14.5px;font-weight:600;gap:10px}
+  .sw{width:48px;height:28px;border-radius:999px;background:#cfd2d8;position:relative;cursor:pointer;flex:none;transition:background .25s}
+  .sw::after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .sw.on{background:var(--good)}.sw.on::after{left:23px}
+  .from{display:inline-block;font-size:11px;font-weight:800;color:var(--good);background:var(--good-l);padding:2px 8px;border-radius:999px;margin-left:6px;animation:pop .5s both}
+  .steps{display:flex;gap:6px}.steps i{flex:1;height:6px;border-radius:9px;background:#EDEEF1;transition:background .4s}.steps i.on{background:var(--red)}
+  input[type=range]{width:100%;accent-color:var(--red);margin:10px 0 4px}
+  .center{text-align:center}
+  .check{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:10px 0;color:var(--ink);font-weight:600}
+  .check input{margin-top:2px;accent-color:var(--red);width:19px;height:19px}
+  .future{position:relative;padding-left:22px;margin-top:6px}
+  .future::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:#f2c3c5}
+  .future div{position:relative;padding:6px 0;font-size:14px}
+  .future div::before{content:"";position:absolute;left:-21px;top:11px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--red)}
+  .future b{font-weight:800}
+  .okmark{width:96px;height:96px;margin:30px auto 10px;border-radius:50%;background:var(--good);display:flex;align-items:center;justify-content:center;animation:pop .6s cubic-bezier(.2,1.6,.4,1) both}
+  .okmark path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .6s .35s forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .proto{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:9.5px;color:#a3a6ad;pointer-events:none;z-index:5}
+</style>
+</head>
+<body>
+<div class="phone" id="phone"><div class="proto">Konsept prototip · Akbank Case Maratonu · Oranlar ve kampanyalar temsilidir</div></div>
+<div class="side">
+  <h3>Pusula · Kredi Kartı Simülasyonu</h3>
+  <p>Öğrenci, kredi kartını almadan önce güvenli bir simülasyonda dener; verdiği bilgilerle başvurusu hazır gelir.</p>
+  <button onclick="demo()">▶ Otomatik demo</button>
+  <button class="sec" onclick="stopDemo();reset()">↺ Baştan başlat</button>
+  <small>Sunumda: “Otomatik demo” akışı kendisi oynatır. Canlı denemede telefondan açın.</small>
+</div>
+
+<script>
+/* ---------- Temsili parametreler (sunumdan önce güncel oranlarla değiştirin) ---------- */
+const RATE = 0.0375, LATE = 0.0405, MIN_PAY = 0.20, START_LIMIT = 10000;
+const HABITS = {
+  kahve:  {ic:'☕', n:'Kahve',          month:1200, pct:20, partner:'Kampüs kahvecileri'},
+  yemek:  {ic:'🍔', n:'Yemek siparişi',  month:1800, pct:15, partner:'Yemek uygulaması'},
+  youtube:{ic:'▶️', n:'YouTube Premium', month:90,   pct:40, partner:'YouTube Premium'},
+  muzik:  {ic:'🎧', n:'Müzik aboneliği', month:100,  pct:30, partner:'Müzik platformu'},
+  ulasim: {ic:'🛴', n:'Ulaşım',          month:900,  pct:10, partner:'Scooter ve ulaşım'},
+  market: {ic:'🛒', n:'Market',          month:1500, pct:5,  partner:'Market zinciri'}
+};
+const EDU = ['Lise','Ön lisans','Lisans','Yüksek lisans','Doktora'];
+const WORK = ['Çalışmıyorum (öğrenci)','Yarı zamanlı','Tam zamanlı','Serbest / freelance'];
+const JOBS = ['Öğrenci','Stajyer','Yazılım / Teknoloji','Eğitim','Satış / Hizmet','Sağlık','Mühendislik','Diğer'];
+const BLANK = {name:'',uni:'',edu:'',work:'',job:'',income:'',habits:[],online:true,troy:'',instant:'',zero:'',pay1:'',inst:'',froze:null,shieldOn:true,shield:5000,interest:0,good:0,decisions:0,autoPay:true,insurance:true,edevlet:false,agree1:false,agree2:false,brand:'axess'};
+const S = JSON.parse(JSON.stringify(BLANK));
+let limitLeft = START_LIMIT;
+
+const fmt = n => Math.round(n).toLocaleString('tr-TR') + ' TL';
+const inc = () => S.income ? fmt(Number(String(S.income).replace(/\./g,''))) : '';
+const phone = document.getElementById('phone');
+let cur = null, curId = null;
+const ORDER = ['home','intro','profile','habits','coffee','statement','result1','install','installres','shield','report','apply1','apply2','apply3','done'];
+
+function go(id, opt={}){
+  const v = document.createElement('div'); v.className='view'; v.innerHTML = SCREENS[id]();
+  const back = ORDER.indexOf(id) < ORDER.indexOf(curId);
+  let inC = back ? 'in-l' : 'in-r', outC = back ? 'out-r' : 'out-l';
+  if(id==='intro' && curId==='home'){ inC='in-up'; outC='out-fade'; }
+  if(id==='home'){ inC='in-l'; outC='out-r'; }
+  if(cur){ const old=cur; old.classList.add(outC); old.style.zIndex=1; v.style.zIndex=back?0:2; if(back) old.style.zIndex=2;
+    setTimeout(()=>old.remove(),460); }
+  v.classList.add(inC); phone.appendChild(v); cur=v; curId=id;
+  requestAnimationFrame(()=>{ v.querySelectorAll('[data-w]').forEach(e=>{e.style.width=e.dataset.w}); v.querySelectorAll('[data-count]').forEach(countUp); v.querySelectorAll('[data-ring]').forEach(ring); });
+}
+function rerender(){ const b=cur.querySelector('.fbody'), y=b?b.scrollTop:0; cur.innerHTML=SCREENS[curId]().replace(/class="fbody stag"/,'class="fbody"'); const nb=cur.querySelector('.fbody'); if(nb) nb.scrollTop=y; cur.querySelectorAll('[data-w]').forEach(e=>{e.style.transition='none';e.style.width=e.dataset.w}); }
+function countUp(el){ const end=+el.dataset.count, t0=performance.now(), d=1100; const f=t=>{const k=Math.min(1,(t-t0)/d), e=1-Math.pow(1-k,3); el.textContent= el.dataset.pct? '%'+Math.round(end*e) : fmt(end*e); if(k<1) requestAnimationFrame(f);}; requestAnimationFrame(f); }
+function ring(el){ const p=+el.dataset.ring, c=2*Math.PI*62; setTimeout(()=>{el.style.strokeDashoffset = c*(1-p/100)},80); }
+function decide(ok){ S.decisions++; if(ok) S.good++; }
+
+const PUS = (s=24,c='#fff') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="${c}" stroke-width="2"/><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z" fill="${c}"/></svg>`;
+const coach = h => `<div class="coach"><div class="pav">${PUS(22)}</div><div class="bub">${h}</div></div>`;
+const STEPS = {intro:6,profile:12,habits:18,coffee:28,statement:36,result1:44,install:56,installres:68,shield:82,report:100};
+const SCN = {coffee:'Sahne 1 / 4 · İlk harcama',statement:'Sahne 2 / 4 · Ekstre',result1:'Sahne 2 / 4 · Ekstre',install:'Sahne 3 / 4 · Taksit',installres:'Sahne 3 / 4 · Taksit',shield:'Sahne 4 / 4 · Kontrol',report:'Güven karnen',intro:'Hazırlık',profile:'Hazırlık',habits:'Hazırlık'};
+const BACK = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H4M10 6l-6 6 6 6"/></svg>`;
+const fhead = (id, title='Kredi Kartı Simülasyonu') => `<div class="rtop"><div class="sb"><span>13:36</span><span>▮▮▮ 59</span></div><div class="fbar"><button class="ibtn" onclick="goBack()">${BACK}</button><span class="ttl">${title}</span><button class="ibtn" onclick="go('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="sub">PUSULA</div></div><div class="fhead"><div class="prog"><i style="width:${Math.max(0,(STEPS[id]||0)-8)}%" data-w="${STEPS[id]||0}%"></i></div><div class="meta"><span>${SCN[id]||''}</span><button class="skip" onclick="go('apply1')">Atla, direkt başvur →</button></div></div>`;
+const ahead = n => `<div class="rtop"><div class="sb"><span>13:36</span><span>▮▮▮ 59</span></div><div class="fbar"><button class="ibtn" onclick="goBack()">${BACK}</button><span class="ttl">Kredi kartı başvurusu</span><span style="width:36px"></span></div><div class="sub">AXESS ÖĞRENCİ</div></div><div class="fhead"><div class="steps">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</div><div class="meta"><span>Adım ${n} / 3</span><span style="color:var(--ink2)">${['','~1 dakika','Neredeyse bitti','Son adım'][n]}</span></div></div>`;
+function goBack(){ const i=ORDER.indexOf(curId); go(i>1?ORDER[i-1]:'home'); }
+
+function ekstre(){ return Math.max(1500, S.habits.reduce((a,h)=>a+HABITS[h].month,0)) + 85; }
+function perksM(){ return S.habits.reduce((a,h)=>a+HABITS[h].month*HABITS[h].pct/100,0); }
+function perkList(){ const l=S.habits.length?S.habits:['kahve','youtube']; return l.map(h=>{const x=HABITS[h];return `<div class="perk"><div><div style="font-weight:800">${x.ic} ${x.n}</div><div class="muted">${x.partner} · aylık ~${fmt(x.month*x.pct/100)}</div></div><span class="pct">%${x.pct}</span></div>`}).join(''); }
+const bcard = (id,label,val,frozen) => `<div class="bcard ${frozen?'frozen':''}" id="${id}"><div class="chipg"></div><div class="br">AXESS ÖĞRENCİ</div><div class="nm">${(S.name||'DENİZ').toLocaleUpperCase('tr-TR')}</div><div class="lim"><small>${label}</small><b id="${id}v">${val}</b></div><div class="lock">🔒</div></div>`;
+
+/* ---------- Ekranlar ---------- */
+const SCREENS = {
+home(){ return `
+ <div class="home">
+  <div class="h-top"><div class="sb"><span>13:36</span><span>▮▮▮ 59</span></div>
+   <div class="h-greet"><div class="asist"><i></i></div><div class="t">İyi günler Deniz,<br>Ben Akbank Asistan!</div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 004 0"/></svg><div class="ini">DY</div></div></div>
+  <div class="h-red">
+   <div class="tabs"><span class="on">Genel bakış</span><span>Hesaplar</span><span>Kartlar</span><span>Yatırımlar</span><span>Krediler</span></div>
+   <div class="hero">
+    <span class="kick">${PUS(14)} AXESS ÖĞRENCİ · PUSULA</span>
+    <h2>İlk kredi kartını almadan önce simülasyonda dene!</h2>
+    <div class="btns"><button class="obtn fill" onclick="go('intro')">Hemen dene</button><button class="obtn" onclick="go('intro')">Nasıl çalışır?</button></div>
+    <div class="comp">${PUS(64,'rgba(255,255,255,.25)')}</div>
+   </div>
+   <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="search"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><circle cx="13" cy="10" r="6"/><path d="M8.5 14.5L3 20"/></svg>Ara</div>
+  <div class="hcards">
+   <div class="hc"><div class="acc"><b>A</b><div><div style="font-weight:800">VADESİZ TL</div><div class="muted">0000-0000000</div></div></div><div class="lb">Kullanılabilir bakiye</div><div class="bal">1.250<small>,00 TL</small></div><div class="muted">Vadesiz Hesap</div></div>
+   <div class="hc pus"><span class="new">YENİ</span>${PUS(30,'#DC0005')}<h4>Kredi kartından korkma, önce 3 dakikada dene.</h4><button class="rbtn" onclick="go('intro')">Simülasyonu başlat</button></div>
+  </div>
+  <div class="last"><div style="font-weight:800;margin-bottom:4px">Son işlemler</div><div class="r"><span>Market</span><b>-212,40 TL</b></div><div class="r"><span>KYK Bursu</span><b style="color:var(--good)">+3.000,00 TL</b></div></div>
+ </div>
+ <div class="fab" onclick="go('intro')"><span class="ic">${PUS(22,'#DC0005')}</span>Pusula</div>
+ <div class="nav"><div class="on"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>Ana sayfa</div><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>Transfer ve ödeme</div><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Başvurular</div><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20s-8-5-8-11a4 4 0 018-1 4 4 0 018 1c0 6-8 11-8 11z"/></svg>Senin için</div></div>`; },
+
+intro(){ return `${fhead('intro')}<div class="fbody stag">
+  <h1>Kredi Kartı Simülasyonu</h1>
+  ${coach(`Selam! Ben <b>Pusula</b>. Kredi kartı biraz korkutucu görünebilir: faiz, ekstre, “ya ödeyemezsem?”. Gel, gerçek para olmadan birlikte deneyelim.`)}
+  <div class="trust"><span class="ic">⏱</span><div><b>3 dakika, 4 sahne</b><span>Harcama, ekstre, taksit ve kontrol</span></div></div>
+  <div class="trust"><span class="ic">🧪</span><div><b>Gerçek para yok, risk yok</b><span>Seçimlerini yap, sonuçlarını gör</span></div></div>
+  <div class="trust"><span class="ic">💳</span><div><b>Axess Öğrenci</b><span>Axess'in öğrencilere özel kartı: aidatsız, mezun olunca aynı kartla devam</span></div></div>
+  <div class="trust"><span class="ic">⚡</span><div><b>Başvurun hazır gelir</b><span>Burada verdiğin bilgileri bir daha yazmazsın</span></div></div>
+ </div><div class="ffoot"><button class="btn p" onclick="go('profile')">Başlayalım</button></div>`; },
+
+profile(){ const unis=['ODTÜ','Boğaziçi Üniversitesi','İTÜ','Hacettepe Üniversitesi','Ankara Üniversitesi','Ege Üniversitesi','Diğer'];
+ return `${fhead('profile')}<div class="fbody stag">
+  <h2 class="s">Önce seni tanıyalım</h2>
+  ${coach(`Bu hikâyenin kahramanı sensin. Hangi kampüsteyiz?`)}
+  <div><label class="f">Adın</label><input class="t" placeholder="Örn. Deniz" value="${S.name}" oninput="S.name=this.value;chk()"></div>
+  <div><label class="f">Üniversiten</label><select class="t" onchange="S.uni=this.value;chk()"><option value="">Seç</option>${unis.map(u=>`<option ${S.uni===u?'selected':''}>${u}</option>`).join('')}</select></div>
+  <div><label class="f">Öğrenim durumun</label><div class="chips">${EDU.map(x=>`<span class="chip ${S.edu===x?'on':''}" onclick="S.edu='${x}';rerender()">${x}</span>`).join('')}</div></div>
+  <div><label class="f">Çalışma şeklin</label><div class="chips">${WORK.map(x=>`<span class="chip ${S.work===x?'on':''}" onclick="S.work='${x}';rerender()">${x}</span>`).join('')}</div></div>
+  <div><label class="f">Mesleğin</label><select class="t" onchange="S.job=this.value;chk()"><option value="">Seç</option>${JOBS.map(j=>`<option ${S.job===j?'selected':''}>${j}</option>`).join('')}</select></div>
+  <p class="tiny" style="margin-top:10px">Bu bilgiler gerçek başvurunda otomatik doldurulur.</p>
+ </div><div class="ffoot"><button class="btn p" id="nx" ${S.name&&S.uni&&S.edu&&S.work&&S.job?'':'disabled'} onclick="go('habits')">Devam</button></div>`; },
+
+habits(){ return `${fhead('habits')}<div class="fbody stag">
+  <h2 class="s">Ayın nasıl geçiyor?</h2>
+  ${coach(`En çok neye harcıyorsun? Sonunda sana özel avantajları buna göre hesaplayacağım.`)}
+  <div class="tiles">${Object.entries(HABITS).map(([k,h])=>`<div class="tile ${S.habits.includes(k)?'on':''}" onclick="tgl('${k}')"><div class="ic">${h.ic}</div><div class="n">${h.n}</div><div class="s">~${fmt(h.month)}/ay</div></div>`).join('')}</div>
+  <div><label class="f">Aylık toplam gelirin (burs, aile desteği, maaş dahil)</label><input class="t" inputmode="numeric" placeholder="Örn. 8.000" value="${S.income}" oninput="S.income=this.value.replace(/[^0-9.]/g,'');this.value=S.income;chkH()"><p class="tiny" style="margin-top:8px">Gerçek başvuruda bu bilgi limitini belirlemek için kullanılır.</p></div>
+ </div><div class="ffoot"><button class="btn p" id="nxh" ${S.habits.length&&S.income?'':'disabled'} onclick="limitLeft=START_LIMIT;go('coffee')">Simülasyonu başlat</button></div>`; },
+
+coffee(){ return `${fhead('coffee')}<div class="fbody stag">
+  <h2 class="s">${S.uni||'Kampüs'}'te bir sabah ☕</h2>
+  ${coach(`Kartın elinde! Limitin <b>${fmt(START_LIMIT)}</b>. Bu senin paran değil; bankanın sana tanıdığı harcama alanı. Hadi ilk kahveni al.`)}
+  ${bcard('bc','Kullanılabilir limit',fmt(limitLeft))}
+  <div id="cmsg"></div>
+ </div><div class="ffoot"><button class="btn p" id="paybtn" onclick="payCoffee()">Kartla öde · 85 TL</button></div>`; },
+
+statement(){ const e=ekstre(); return `${fhead('statement')}<div class="fbody stag">
+  <h2 class="s">Ay bitti, ekstren kesildi 📄</h2>
+  ${coach(`Ay boyunca kartla yaptığın harcamalar <b>ekstre</b>nde toplandı. Ödemek için yaklaşık <b>10 günün</b> var. Ne yaparsın?`)}
+  <div class="card"><div class="kv"><span>Dönem borcu</span><b>${fmt(e)}</b></div><div class="kv"><span>Asgari ödeme (%${MIN_PAY*100})</span><b>${fmt(e*MIN_PAY)}</b></div><div class="kv"><span>Son ödeme</span><b>10 gün sonra</b></div></div>
+  <div class="opt" onclick="pay1('full')"><div><div class="n">Tamamını öde</div><div class="s">${fmt(e)}</div></div><span class="ch">›</span></div>
+  <div class="opt" onclick="pay1('min')"><div><div class="n">Asgari tutarı öde</div><div class="s">${fmt(e*MIN_PAY)}</div></div><span class="ch">›</span></div>
+  <div class="opt" onclick="pay1('none')"><div><div class="n">Bu ay ödeyemiyorum</div><div class="s">Ne olur, görelim</div></div><span class="ch">›</span></div>
+ </div>`; },
+
+result1(){ const e=ekstre(); let r='';
+  if(S.pay1==='full') r=`<div class="res good"><h3>Sıfır faiz 🏅</h3><p>Tamamını ödedin, <b>hiç faiz yok</b>. Gerçek kartında <b>otomatik tam ödeme</b> açık gelir; unutsan bile faiz ödemezsin.</p></div>`;
+  if(S.pay1==='min'){ const k=e*(1-MIN_PAY), f=k*RATE; r=`<div class="res warn"><h3>Faiz işlemeye başladı</h3><p>Kalan <b>${fmt(k)}</b> için bu ay yaklaşık <b>${fmt(f)}</b> faiz ödersin. Asgari ödeme seni gecikmeden korur ama borç büyür.</p></div>`; }
+  if(S.pay1==='none'){ const f=e*LATE; r=`<div class="res bad"><h3>Gecikmeye düştün, ama çıkış var</h3><p>Yaklaşık <b>${fmt(f)}</b> gecikme faizi işler ve kredi notun etkilenir. <b>Çözüm:</b> ekstreni taksitlendirip küçük parçalara bölebilirsin.</p></div>`; }
+  return `${fhead('result1')}<div class="fbody stag"><h2 class="s">Sonuç</h2>${r}
+  <h2 class="s" style="font-size:16px;margin-top:8px">Pusula seni nasıl korur?</h2>
+  <div class="trust"><span class="ic">🔁</span><div><b>Otomatik tam ödeme</b><span>Varsayılan olarak açık, faize hiç girmezsin</span></div></div>
+  <div class="trust"><span class="ic">🔔</span><div><b>3 gün ve 1 gün kala hatırlatma</b><span>Son ödeme gününü kaçırmazsın</span></div></div>
+ </div><div class="ffoot"><button class="btn p" onclick="go('install')">Sonraki sahne</button></div>`; },
+
+install(){ const p=6000, n=12, i=p*RATE/(1-Math.pow(1+RATE,-n)); return `${fhead('install')}<div class="fbody stag">
+  <h2 class="s">Yeni dönem, yeni laptop 💻</h2>
+  ${coach(`Derslerin için laptop lazım: <b>${fmt(p)}</b>. Taksit seçenekleri cazip görünebilir. Toplam maliyete bakalım.`)}
+  <div class="opt" onclick="inst('cash')"><div><div class="n">Tek çekim</div><div class="s">Toplam ${fmt(p)}</div></div><span class="ch">›</span></div>
+  <div class="opt" onclick="inst('3')"><div><div class="n">3 taksit · kampanyalı</div><div class="s">3 × ${fmt(p/3)} · ek maliyet yok</div></div><span class="ch">›</span></div>
+  <div class="opt" onclick="inst('12')"><div><div class="n">12 taksit · faizli</div><div class="s">12 × ${fmt(i)}</div></div><span class="ch">›</span></div>
+ </div>`; },
+
+installres(){ const p=6000, n=12, tot=p*RATE/(1-Math.pow(1+RATE,-n))*n; let h='';
+  if(S.inst==='cash') h=`<div class="res good"><h3>Temiz iş</h3><p>Tek çekim, ek maliyet yok. Sadece o ayki ekstrenin bütçene sığdığından emin ol.</p></div>`;
+  if(S.inst==='3') h=`<div class="res good"><h3>Akıllı seçim</h3><p>Kampanyalı taksitle ödemeyi 3 aya yaydın, <b>ek maliyet sıfır</b>.</p></div>`;
+  if(S.inst==='12') h=`<div class="res warn"><h3>Taksitin bir bedeli var</h3><p>12 taksitte toplam yaklaşık <b>${fmt(tot)}</b> ödersin: laptop <b>${fmt(tot-p)}</b> daha pahalıya gelir.</p></div>`;
+  return `${fhead('installres')}<div class="fbody stag"><h2 class="s">Sonuç</h2>${h}
+  <div class="trust"><span class="ic">🔍</span><div><b>Sürpriz yok</b><span>Her taksit ekranında toplam maliyeti sade dille görürsün. Kart aidatı yok.</span></div></div>
+ </div><div class="ffoot"><button class="btn p" onclick="go('shield')">Son sahne</button></div>`; },
+
+shield(){ return `${fhead('shield')}<div class="fbody stag">
+  <h2 class="s">Kontrol sende 🎛</h2>
+  ${coach(`“Fazla harcarım” korkusuna son. Limitin ne olursa olsun, <b>kendi bütçeni sen belirle</b>. %80'e gelince uyarırım; istersen kart orada durur.`)}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between"><b>Aylık harcama sınırım</b><b id="shv" style="color:var(--red)">${fmt(S.shield)}</b></div>
+    <input type="range" min="1000" max="15000" step="500" value="${S.shield}" oninput="S.shield=+this.value;document.getElementById('shv').textContent=fmt(S.shield)">
+    <div class="toggle"><span>Sınıra gelince kartı durdur</span><span class="sw ${S.shieldOn?'on':''}" onclick="S.shieldOn=!S.shieldOn;this.classList.toggle('on')"></span></div>
+    <div class="toggle" style="border:0"><span>Otomatik tam ödeme</span><span class="sw ${S.autoPay?'on':''}" onclick="S.autoPay=!S.autoPay;this.classList.toggle('on')"></span></div>
+  </div>
+  <p class="tiny">Bu ayarlar başvurunda hazır gelir.</p>
+ </div><div class="ffoot"><button class="btn p" onclick="shieldDone()">Güven karnemi gör</button></div>`; },
+
+report(){ const lit=Math.round(60+40*S.good/Math.max(1,S.decisions)), c=2*Math.PI*62;
+ return `${fhead('report','Güven Karnen')}<div class="fbody stag">
+  <h1 class="center">${S.name||'Senin'}, kartı kullanmaya hazırsın!</h1>
+  <div class="card center">
+    <div class="ring"><svg width="150" height="150"><circle cx="75" cy="75" r="62" stroke="#EDEEF1" stroke-width="14" fill="none"/><circle data-ring="${lit}" cx="75" cy="75" r="62" stroke="#DC0005" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}" style="transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)"/></svg><div class="v"><b data-count="${lit}" data-pct="1">%0</b><span>Kart okuryazarlığı</span></div></div>
+    <div class="kv" style="margin-top:8px"><span>Doğru kararlar</span><b>${S.good} / ${S.decisions}</b></div>
+    <div class="kv"><span>Simülasyonda ödediğin faiz</span><b>${fmt(S.interest)}</b></div>
+  </div>
+  <div class="card"><b style="font-size:16px">Kartınla kazanabileceklerin 🎁</b>${perkList()}
+    <div class="center" style="margin-top:10px"><div class="muted">Yılda toplam avantaj</div><div class="big" data-count="${perksM()*12}">0 TL</div></div>
+    <p class="tiny center">Önerilen iş birliği kampanyaları · temsili oranlar</p></div>
+  <div class="card"><b style="font-size:16px">Kartın seninle büyür 🚀</b>
+    <div class="future"><div><b>Bugün:</b> aidatsız Axess Öğrenci kartı, ilk 3 harcamana nakit iade</div><div><b>Düzenli ödedikçe:</b> limitin ve kredi notun büyür</div><div><b>Mezuniyette:</b> kartın değişmez; Axess Öğrenci kartın standart Axess ayrıcalıklarıyla devam eder, puanların ve kredi geçmişin seninle kalır</div></div></div>
+ </div><div class="ffoot"><button class="btn p" onclick="go('apply1')">Gerçek kartımı al</button><button class="btn g" onclick="share()">📤 Skorunu paylaş</button></div>`; },
+
+apply1(){ const tag=v=>''; return `${ahead(1)}<div class="fbody stag">
+  ${coach(`Simülasyonda verdiğin bilgileri buraya taşıdım. Sadece kontrol et.`)}
+  <div class="sec-l">KİŞİSEL BİLGİLER</div>
+  <div><label class="f">Ad ${tag(S.name)}</label><input class="t" value="${S.name}" oninput="S.name=this.value"></div>
+  <div><label class="f">Üniversite ${tag(S.uni)}</label><input class="t" value="${S.uni}" oninput="S.uni=this.value"></div>
+  <div><label class="f">Öğrenim durumu ${tag(S.edu)}</label><input class="t" value="${S.edu}" oninput="S.edu=this.value"></div>
+  <div class="sec-l">GELİR BİLGİLERİ</div>
+  <div><label class="f">Çalışma şekli ${tag(S.work)}</label><input class="t" value="${S.work}" oninput="S.work=this.value"></div>
+  <div><label class="f">Meslek ${tag(S.job)}</label><input class="t" value="${S.job}" oninput="S.job=this.value"></div>
+  <div><label class="f">Aylık toplam gelir ${tag(S.income)}</label><input class="t" value="${inc()}" oninput="S.income=this.value.replace(/[^0-9.]/g,'')"></div>
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><b>Öğrenci belgesi</b><div class="muted">e-Devlet'ten otomatik doğrulanır</div></div>
+    ${S.edevlet?'<b style="color:var(--good)">✓ Doğrulandı</b>':'<button class="rbtn" onclick="S.edevlet=true;rerender()">Doğrula</button>'}</div>
+ </div><div class="ffoot"><button class="btn p" onclick="go('apply2')">Devam</button></div>`; },
+
+apply2(){ const R=(key,val,label,dis)=>`<span class="rad ${S[key]===val?'on':''} ${dis?'dis':''}" ${dis?'':`onclick="S.${key}='${val}';${key==='troy'&&val==='evet'?"S.instant='hayir';":''}rerender()"`}><span>${label}</span><i></i></span>`;
+  const troyYes = S.troy==='evet', ready = S.troy && S.zero && (troyYes || S.instant);
+  return `${ahead(2)}<div class="fbody stag">
+  <div class="sec-l">KART BİLGİLERİ</div>
+  <div class="card" style="padding:4px 18px">
+    <div class="pref" style="display:flex;justify-content:space-between;align-items:center"><span class="q">İnternetten Alışveriş</span><span class="sw ${S.online?'on':''}" onclick="S.online=!S.online;this.classList.toggle('on')"></span></div>
+    <div class="pref"><div class="q">Kart TROY tercihi <span class="info">i</span></div><div class="radios">${R('troy','evet','Evet')}${R('troy','hayir','Hayır')}</div></div>
+    <div class="pref"><div class="q ${troyYes?'dis':''}">Kartını anında dijitalden kullanmak ister misin? <span class="info">i</span></div><div class="radios">${R('instant','evet','Evet',troyYes)}${R('instant','hayir','Hayır',troyYes)}</div>
+      ${troyYes?'<div class="note"><span class="info">i</span><span>TROY logolu kartın anında dijitalden kullanım seçeneği bulunmamaktadır.</span></div>':''}</div>
+    <div class="pref"><div class="q">0 TL limitli kart tercihi <span class="info">i</span></div><div class="d">Evet tercihinle, diğer bankalardaki kartların sebebiyle yeni kartına limit kalmamışsa, 0 TL limitli kartını oluşturacağız. Limit açtığında kartı kullanmaya başlayabilirsin.</div><div class="radios">${R('zero','evet','Evet')}${R('zero','hayir','Hayır')}</div></div>
+  </div>
+  <div class="sec-l">PUSULA GÜVENCELERİ</div>
+  <div class="card" style="padding:4px 18px">
+    <div class="toggle"><span>Harcama kalkanı · ${fmt(S.shield)}/ay</span><span class="sw ${S.shieldOn?'on':''}" onclick="S.shieldOn=!S.shieldOn;this.classList.toggle('on')"></span></div>
+    <div class="toggle"><span>Otomatik tam ödeme</span><span class="sw ${S.autoPay?'on':''}" onclick="S.autoPay=!S.autoPay;this.classList.toggle('on')"></span></div>
+    <div class="toggle" style="border:0"><span>Kart koruma sigortası · ilk yıl ücretsiz</span><span class="sw ${S.insurance?'on':''}" onclick="S.insurance=!S.insurance;this.classList.toggle('on')"></span></div>
+  </div>
+ </div><div class="ffoot"><button class="btn p" ${ready?'':'disabled'} onclick="go('apply3')">Devam</button></div>`; },
+
+apply3(){ const yn=v=>v==='evet'?'Evet':v==='hayir'?'Hayır':'-'; return `${ahead(3)}<div class="fbody stag">
+  <h2 class="s">Özet</h2>
+  <div class="card"><div class="kv"><span>Ad</span><b>${S.name||'-'}</b></div><div class="kv"><span>Üniversite</span><b>${S.uni||'-'}</b></div><div class="kv"><span>Öğrenim durumu</span><b>${S.edu||'-'}</b></div><div class="kv"><span>Çalışma şekli</span><b>${S.work||'-'}</b></div><div class="kv"><span>Meslek</span><b>${S.job||'-'}</b></div><div class="kv"><span>Aylık toplam gelir</span><b>${inc()||'-'}</b></div></div>
+  <div class="card"><div class="kv"><span>Kart</span><b>Axess Öğrenci</b></div><div class="kv"><span>İnternetten alışveriş</span><b>${S.online?'Açık':'Kapalı'}</b></div><div class="kv"><span>TROY tercihi</span><b>${yn(S.troy)}</b></div><div class="kv"><span>Anında dijital kullanım</span><b>${S.troy==='evet'?'Hayır':yn(S.instant)}</b></div><div class="kv"><span>0 TL limitli kart</span><b>${yn(S.zero)}</b></div><div class="kv"><span>Harcama kalkanı</span><b>${S.shieldOn?fmt(S.shield):'Kapalı'}</b></div><div class="kv"><span>Otomatik tam ödeme</span><b>${S.autoPay?'Açık':'Kapalı'}</b></div><div class="kv"><span>Kart aidatı</span><b style="color:var(--good)">Yok</b></div></div>
+  <div><label class="check"><input type="checkbox" ${S.agree1?'checked':''} onchange="S.agree1=this.checked;rerender()"> Sözleşmenin sade dille özetini okudum</label>
+  <label class="check"><input type="checkbox" ${S.agree2?'checked':''} onchange="S.agree2=this.checked;rerender()"> KVKK aydınlatma metnini okudum</label></div>
+ </div><div class="ffoot"><button class="btn p" ${S.agree1&&S.agree2?'':'disabled'} onclick="go('done')">Başvur</button></div>`; },
+
+done(){ return `<div class="sb"><span>13:36</span><span>▮▮▮ 59</span></div><div class="fbody stag">
+  <div class="okmark"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+  <h1 class="center">Kartın hazır!</h1>
+  <p class="center">Dijital öğrenci kartın uygulamanda. Fiziksel kartın 3 iş günü içinde adresinde.</p>
+  <div style="margin-top:16px">${bcard('bc4','Harcama kalkanı',S.shieldOn?fmt(S.shield):'Kapalı')}</div>
+  ${coach(`Simülasyon bitti ama ben buradayım. İlk ekstreni birlikte açacağız ve ödeme gününden önce hatırlatacağım. İlk 3 harcamana nakit iade var! 🎁`)}
+ </div><div class="ffoot"><button class="btn p" onclick="go('home')">Ana sayfaya dön</button></div>`; }
+};
+
+/* ---------- Etkileşimler ---------- */
+function chk(){ const b=document.getElementById('nx'); if(b) b.disabled=!(S.name&&S.uni&&S.edu&&S.work&&S.job); }
+function chkH(){ const b=document.getElementById('nxh'); if(b) b.disabled=!(S.habits.length&&S.income); }
+function tgl(k){ const i=S.habits.indexOf(k); i>-1?S.habits.splice(i,1):S.habits.push(k); rerender(); }
+function payCoffee(){ const b=document.getElementById('paybtn'), c=document.getElementById('bc'); if(b.dataset.done){go('statement');return;}
+  c.classList.add('tap'); const from=limitLeft; limitLeft-=85; const el=document.getElementById('bcv'), t0=performance.now();
+  const f=t=>{const k=Math.min(1,(t-t0)/700); el.textContent=fmt(from-85*k); if(k<1) requestAnimationFrame(f)}; requestAnimationFrame(f);
+  document.getElementById('cmsg').innerHTML = `<div class="res good"><h3>Ödeme başarılı ✓</h3><p>Limitinden <b>85 TL</b> düştü. Bu tutar ay sonunda <b>ekstrende</b> toplanır. Ay boyunca diğer harcamalarını da kartla yaptığını varsayalım…</p></div>`;
+  b.textContent='Ay sonuna atla →'; b.dataset.done=1; }
+function pay1(x){ S.pay1=x; const e=ekstre(); decide(x==='full');
+  if(x==='min') S.interest+=e*(1-MIN_PAY)*RATE; if(x==='none') S.interest+=e*LATE; go('result1'); }
+function inst(x){ S.inst=x; decide(x!=='12'); if(x==='12'){ const p=6000,n=12; S.interest+=p*RATE/(1-Math.pow(1+RATE,-n))*n-p; } go('installres'); }
+function shieldDone(){ decide(S.shieldOn||S.autoPay); go('report'); }
+function share(){ const lit=Math.round(60+40*S.good/Math.max(1,S.decisions)); const t=`Akbank'ta kredi kartı simülasyonunu tamamladım, kart okuryazarlığım %${lit}! Seninki kaç?`;
+  if(navigator.share) navigator.share({text:t}).catch(()=>{}); else { try{navigator.clipboard.writeText(t)}catch(e){} } }
+function reset(){ Object.assign(S, JSON.parse(JSON.stringify(BLANK))); limitLeft=START_LIMIT; go('home'); }
+
+/* ---------- Otomatik demo (sunum için) ---------- */
+let demoT=[];
+function stopDemo(){ demoT.forEach(clearTimeout); demoT=[]; }
+function demo(){ stopDemo(); reset();
+  const steps=[
+    [1800,()=>go('intro')],[2600,()=>go('profile')],
+    [1200,()=>{Object.assign(S,{name:'Deniz',uni:'ODTÜ',edu:'Lisans',work:'Yarı zamanlı',job:'Öğrenci'});rerender();}],
+    [1800,()=>go('habits')],[1200,()=>{S.habits=['kahve','youtube','yemek'];S.income='8.000';rerender();}],
+    [1900,()=>{limitLeft=START_LIMIT;go('coffee')}],[2000,()=>payCoffee()],[3200,()=>go('statement')],
+    [2800,()=>pay1('min')],[3600,()=>go('install')],[2600,()=>inst('3')],[3000,()=>go('shield')],[2600,()=>shieldDone()],[5500,()=>go('apply1')],
+    [2200,()=>{S.edevlet=true;rerender()}],[1800,()=>go('apply2')],[1600,()=>{S.troy='hayir';S.instant='evet';S.zero='evet';rerender()}],[2600,()=>go('apply3')],
+    [1500,()=>{S.agree1=S.agree2=true;rerender()}],[1600,()=>go('done')]
+  ];
+  let t=0; steps.forEach(([d,fn])=>{t+=d; demoT.push(setTimeout(fn,t));}); }
+
+go('home');
+</script>
+</body>
+</html>
